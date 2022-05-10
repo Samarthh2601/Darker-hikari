@@ -38,12 +38,6 @@ class Dark(BotApp):
         async with ClientSession() as bot_session:
             self.http = bot_session
 
-        [os.remove(f"db/__pycache__/{file}") for file in os.listdir("db/__pycache__")]
-        [os.remove(f"extensions/__pycache__/{file}") for file in os.listdir("extensions/__pycache__")]
-        os.removedirs("extensions/__pycache__")
-        os.removedirs("db/__pycache__")
-
-
 bot = Dark()
 miru.load(bot)
 
