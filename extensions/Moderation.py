@@ -251,22 +251,7 @@ async def embed_text(ctx: lightbulb.SlashContext):
     return await channel.send(embed=embed)
         
 
-@lightbulb.add_checks(lightbulb.has_guild_permissions(hikari.Permissions.MANAGE_MESSAGES))
-@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(hikari.Permissions.MANAGE_MESSAGES))
-@mod.command
-@lightbulb.option(name="poll_title", description="The title of the poll!", type=str, required=False)
-@lightbulb.option(name="poll_description", description="The description of the poll!", type=str, required=False)
-@lightbulb.option(name="option_one", description="The first option!", required=True, type=str)
-@lightbulb.option(name="option_two", description="The second option!", required=True, type=str)
-@lightbulb.option(name="option_three", description="The third option!", required=False, type=str)
-@lightbulb.option(name="option_four", description="The fourth option!", required=False, type=str)
-@lightbulb.option(name="option_five", description="The fifth option!", required=False, type=str)
-@lightbulb.option(name="option_six", description="The sixth option!", required=False, type=str)
-@lightbulb.option(name="timed_poll", description="Should the poll have a timeout or not? Results after end if timeouts!", choices=["Yes", "No"], required=False, type=str, default="No")
-@lightbulb.command(name="poll", description="Raise a poll!", auto_defer=True, ephemeral=True)
-@lightbulb.implements(lightbulb.SlashCommand)
-async def create_poll(ctx: lightbulb.SlashContext):
-    ...
+
 
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(mod)

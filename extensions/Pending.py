@@ -1,8 +1,7 @@
 import lightbulb
 import hikari
 import random
-import miru
-from views import *
+import views
 
 class Pending(lightbulb.Plugin):
     def __init__(self):
@@ -45,6 +44,7 @@ async def _vent(ctx: lightbulb.SlashContext):
         webhook = await pending.bot.rest.create_webhook(vent_channel.id, name=name, avatar=image_url)
     embed = hikari.Embed(description=text, color=hikari.Color.from_rgb(222, 0, 100))
     await webhook.execute(embed=embed)
+
 
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(pending)

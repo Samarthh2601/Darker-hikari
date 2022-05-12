@@ -11,5 +11,5 @@ colours = {
     "white" : "e6edf0",
     "yellow" : "FFFF00",}
 
-def get_hex(colour: str):
+def get_hex(colour: str) -> str:
     return colours.get(colour)

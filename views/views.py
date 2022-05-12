@@ -2,9 +2,9 @@ import hikari
 import miru
 
 class KickView(miru.View):
-    def __init__(self):
-        self.confirm = False
+    def __init__(self) -> miru.View:
         super().__init__(timeout=15, autodefer=True)
+        self.confirm = False
 
     @miru.button(label="Kick", style=hikari.ButtonStyle.SUCCESS)
     async def confirm_kick(self, button: miru.Button, ctx: miru.Context) -> None:
@@ -19,7 +19,7 @@ class KickView(miru.View):
         self.stop()
 
 class BanView(miru.View):
-    def __init__(self):
+    def __init__(self) -> miru.view:
         self.confirm = False
         super().__init__(timeout=15, autodefer=True)
     
