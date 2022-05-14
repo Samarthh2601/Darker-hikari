@@ -1,7 +1,6 @@
 import lightbulb
 import hikari
 import random
-import views
 
 class Pending(lightbulb.Plugin):
     def __init__(self):

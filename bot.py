@@ -11,8 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def get_token():
-    return os.getenv("TOKEN")
+def get_token(): return os.getenv("TOKEN")
 
 class Dark(BotApp):
     def __init__(self) -> BotApp:
@@ -22,7 +21,6 @@ class Dark(BotApp):
         self.channels = Channels()
         self.warns = Warns()
         self.info = Info()
-        self.polls = Poll()
 
         super().__init__(token=get_token(), prefix="!", ignore_bots=True, owner_ids=[925079016174682213], help_slash_command=True, intents=hikari.Intents.ALL)
         self._boot = datetime.utcnow()
@@ -36,7 +34,6 @@ class Dark(BotApp):
         await self.channels.setup()
         await self.warns.setup()
         await self.info.setup()
-        await self.polls.setup()
         async with ClientSession() as bot_session:
             self.http = bot_session
 
