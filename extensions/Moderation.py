@@ -148,7 +148,7 @@ async def purge_messages(ctx: lightbulb.SlashContext):
 @lightbulb.add_checks(lightbulb.has_guild_permissions(hikari.Permissions.MANAGE_MESSAGES))
 @lightbulb.add_checks(lightbulb.bot_has_guild_permissions(hikari.Permissions.MANAGE_MESSAGES))
 @mod.command
-@lightbulb.option(name="member", description="The member to clear the messages of!", required=False, type=hikari.Member)
+@lightbulb.option(name="member", description="The member to clear the messages of!", required=True, type=hikari.Member)
 @lightbulb.option(name="messages", description="The amount of messages to purge!", required=False, type=int, default=5)
 @lightbulb.option(name="channel", description="The channel to clear the messages from!", required=False, type=hikari.TextableGuildChannel)
 @lightbulb.command(name="clear", description="Clear a specific member's messages from a channel!", auto_defer=True, ephemeral=True)
@@ -249,8 +249,55 @@ async def embed_text(ctx: lightbulb.SlashContext):
     if embed_addit_message: return await channel.send(embed_addit_message, embed=embed)
     return await channel.send(embed=embed)
         
+@lightbulb.add_checks(lightbulb.has_guild_permissions(hikari.Permissions.MANAGE_CHANNELS))
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(hikari.Permissions.MANAGE_CHANNELS))
+@mod.command
+@lightbulb.option(name="option", description="What to set!", type=str, required=True, choices=["Welcome Channel", "Leave Channel", "Log Channel", "Vent Channel", "Kick Threshold", "Ban Threshold"])
+@lightbulb.option(name="integer", description="The channel ID or the threshold number!", type=str, required=True)
+@lightbulb.command(name="config", description="Configure settings for this server!", auto_defer=True, ephemeral=True)
+@lightbulb.implements(lightbulb.SlashCommand)
+async def config_settings(ctx: lightbulb.SlashContext):
+    option = ctx._options.get("option").lower()
+    value = int(ctx._options.get("integer"))
+    await mod.bot.channels.create(ctx.guild_id, 0, 0, 0, 0)
+    if option == "kick threshold":
+        await mod.bot.info.update(ctx.guild_id, kick_thresh=value)
+        return await ctx.respond(f"Successfully set the kick threshold to {value}!")
+    elif option == "ban threshold":
+        await mod.bot.info.update(ctx.guild_id, ban_thresh=value)
+        return await ctx.respond(f"Successfully set the ban threshold to {value}!")
+    channel = await mod.bot.rest.fetch_channel(value)
+    if not channel:
+        return await ctx.respond("That is not a valid channel!")
+    embed = hikari.Embed(description=channel.name).set_footer("You can set the integer to 0 to unregister channels!")
+    if option == "welcome channel":
+        await mod.bot.channels.update(ctx.guild_id, welcome=value)
+        embed.title = "Welcome Channel Set!"
+    elif option == "leave channel":
+        await mod.bot.channels.update(ctx.guild_id, leave=value)
+        embed.title = "Leave Channel Set"
+    elif option == "log channel":
+        await mod.bot.channels.update(ctx.guild_id, log=value)
+        embed.title = "Log Channel Set"
+    elif option == "vent channel":
+        await mod.bot.channels.update(ctx.guild_id, vent=value)
+        embed.title = "Venting Channel Set"
+    await ctx.respond(embed=embed)
 
-
+@lightbulb.add_checks(lightbulb.has_guild_permissions(hikari.Permissions.MANAGE_CHANNELS))
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(hikari.Permissions.MANAGE_CHANNELS))
+@mod.command
+@lightbulb.command(name="configured_channels", description="Get all the channels configured prior!", auto_defer=True, ephemeral=True)
+@lightbulb.implements(lightbulb.SlashCommand)
+async def config_channels(ctx: lightbulb.SlashContext):
+    guild = ctx.get_guild()
+    icon = guild.icon_url
+    configed_channels = await mod.bot.channels.create(ctx.guild_id, 0, 0, 0, 0)
+    data_dict = ext.format_channels(configed_channels)
+    embed = hikari.Embed(title=f"Configured Channels for {guild.name}!", colour=ctx.author.accent_colour).add_field("Welcome channel", data_dict["welcome"]).add_field("Leave channel", data_dict["leave"]).add_field("Log channel", data_dict["log"]).add_field("Vent channel", data_dict["vent"])
+    if icon:
+        embed.set_thumbnail(icon)
+    await ctx.respond(embed=embed)
 
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(mod)

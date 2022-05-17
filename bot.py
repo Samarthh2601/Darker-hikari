@@ -15,7 +15,7 @@ def get_token(): return os.getenv("TOKEN")
 
 class Dark(BotApp):
     def __init__(self) -> BotApp:
-        self.http: ClientSession
+        self.http = ClientSession()
         self.eco = Bank()
         self.xp = Experience()
         self.channels = Channels()
@@ -34,8 +34,6 @@ class Dark(BotApp):
         await self.channels.setup()
         await self.warns.setup()
         await self.info.setup()
-        async with ClientSession() as bot_session:
-            self.http = bot_session
 
 bot = Dark()
 miru.load(bot)
