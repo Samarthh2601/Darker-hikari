@@ -103,6 +103,5 @@ async def get_meme(ctx: lightbulb.SlashContext):
     embed = hikari.Embed(title= content["title"], description=f"By: {content['author']}", color=ctx.author.accent_color).set_footer(text=f"Reddit Page: {content['postLink']}").set_image(content["url"])
     await ctx.respond(embed=embed)
 
-
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(misc)

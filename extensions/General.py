@@ -178,5 +178,19 @@ async def _vent(ctx: lightbulb.SlashContext):
     await webhook.execute(embed=embed)
     return await ctx.respond(f"Successfully vented in {vent_channel.mention}")
 
+@gen.command
+@lightbulb.option(name="member", description="The member to get the info of!", required=False, type=hikari.Member)
+@lightbulb.command(name="rank", description="Get your experience and level!", auto_defer=True, ephemeral=True)
+@lightbulb.implements(lightbulb.SlashCommand)
+async def get_rank(ctx: lightbulb.SlashContext):
+    member = ctx._options.get("member") or ctx.author
+    if not isinstance(member, hikari.Member):
+        member = await gen.bot.rest.fetch_member(ctx.guild_id, member.id)
+    info = await gen.bot.xp.create(member.id, ctx.guild_id)
+    embed = hikari.Embed(title="Level Up!", description=f"XP: {info.xp}\nLevel:{info.level}", colour=member.accent_colour)
+    await ctx.respond(embed=embed)
+
+
+
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(gen)

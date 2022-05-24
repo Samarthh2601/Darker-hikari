@@ -1,3 +1,5 @@
+import hikari
+
 async def get_news(*, api_key: str, req_client, query: str)  -> dict:
     resp = await req_client.get(f'https://newsapi.org/v2/everything?q={query}&pageSize=1&sortBy=popularity&apiKey={api_key}')
     if resp.status != 200:
@@ -54,3 +56,13 @@ colours = {
 
 def get_hex(colour: str) -> str:
     return colours.get(colour)
+
+async def check_level_up(author: hikari.Member, guild_id: int, xp: int, cur_level: int, db, msg) -> None:
+    if xp%250!=0:
+        return
+    await db.update(author.id, guild_id, level=cur_level+1)
+    embed = hikari.Embed(title="Level Up!", description=f"XP: {xp}\nLevel:{cur_level+1}", colour=msg.author.accent_colour)
+    try:
+        return await msg.author.send(embed=embed)
+    except (hikari.ForbiddenError):
+        return

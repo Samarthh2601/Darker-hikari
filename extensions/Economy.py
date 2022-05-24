@@ -23,8 +23,6 @@ async def create_acc(ctx: lightbulb.SlashContext):
 @lightbulb.implements(lightbulb.SlashCommand)
 async def balance(ctx: lightbulb.SlashContext):
     member: hikari.Member = ctx._options.get("member") or ctx.author
-    if member.is_bot:
-        return await ctx.respond("Cannot get balance information for bot accounts!")
     data = await eco.bot.eco.create(member.id)
     embed = hikari.Embed(title="Balance!", description=member, colour=ctx.author.accent_colour).add_field("Wallet", data.wallet).add_field("Bank", data.bank)
     if member.avatar_url:
@@ -165,11 +163,10 @@ async def send_coins(ctx: lightbulb.SlashContext):
         return await ctx.respond("You do not have an account yet! Run `/create_account` to create one!")
     if amount > user_data.wallet:
         return await ctx.respond("The amount you're trying to transfer is greater than your wallet balance.")
-    await ctx.respond(f"Successfully sent **{member}** {amount} of Dark Coins! Your wallet balance is now **{user_data.wallet-amount}**")
+    await ctx.respond(f"Successfully sent **{member}** {amount} Dark Coin(s)! Your wallet balance is now **{user_data.wallet-amount}**")
     await eco.bot.eco.update(ctx.author.id, wallet=user_data.wallet-amount)
-
-    member_data = await eco.bot.eco.create(ctx.author.id)
-    await eco.bot.eco.update(member.id, wallet=member_data.wallet+amount)
+    member_data = await eco.bot.eco.create(member.id)
+    await eco.bot.eco.update(member.id, wallet=member_data.wallet+(amount))
 
 @lightbulb.add_cooldown(10.0, 1, lightbulb.UserBucket)
 @eco.command
@@ -214,6 +211,42 @@ async def bet_coins(ctx: lightbulb.SlashContext):
         return await eco.bot.eco.update(ctx.author.id, wallet=user_data.wallet-amount)
     await ctx.respond(f"You won! Your wallet balance is now **{user_data.wallet+(amount*5)}**")
     await eco.bot.eco.update(ctx.author.id, wallet=user_data.wallet+(amount*5))
+
+@lightbulb.add_cooldown(30.0, 1, lightbulb.UserBucket)
+@eco.command
+@lightbulb.option(name="number", description="The number to predict!", required=True, type=int, choices=[1, 2, 3, 4, 5, 6])
+@lightbulb.command(name="roll", description="Roll the dice and earn coins!", auto_defer=True, ephemeral=True)
+@lightbulb.implements(lightbulb.SlashCommand)
+async def roll_(ctx: lightbulb.SlashContext):
+    number = ctx._options.get("number")
+    user_data = await eco.bot.eco.read(ctx.author.id)
+    if not user_data:
+        return await ctx.respond("You do not have an account yet! Run `/create_account` to create one!")    
+    c = random.randint(1, 6)
+    if c != number:
+        return await ctx.respond(f"The dice rolled to **{c}** but you chose the number **{number}**")
+    await ctx.respond(f"You won! Your wallet balance is now **{user_data.wallet+200}**")
+    await eco.bot.eco.update(ctx.author.id, wallet=user_data.wallet+200)
+
+@lightbulb.add_cooldown(30.0, 1, lightbulb.UserBucket)
+@eco.command
+@lightbulb.option(name="amount", description="The amount to bet!", type=int, required=True)
+@lightbulb.command(name="slots", description="Play the Slots minigame and earn coins!", auto_defer=True, ephemeral=True)
+@lightbulb.implements(lightbulb.SlashCommand)
+async def slots_(ctx: lightbulb.SlashContext):
+    amount = ctx._options.get("amount")
+    user_data = await eco.bot.eco.read(ctx.author.id)
+    if not user_data:
+        return await ctx.respond("You do not have an account yet! Run `/create_account` to create one!")
+    if amount > user_data.wallet:
+        return await ctx.respond("The amount you're trying to bet is more than your wallet balance.")
+
+    opts = [random.choice([":strawberry:", ":apple:", ":mango:"]) for _ in range(3)]    
+    if opts[0] == opts[1] and opts[0] == opts[2]:
+        await ctx.respond(f"{' | '.join(opts)}, You won! Your wallet balance is now **{user_data.wallet+(amount*3)}**")
+        return await eco.bot.eco.update(ctx.author.id, wallet=user_data.wallet+(amount*3))
+    await ctx.respond(f"{' | '.join(opts)}, You lost! Your wallet balance is now **{user_data.wallet-amount}**!")
+    await eco.bot.eco.update(ctx.author.id, wallet=user_data.wallet-amount)
 
 
 def load(bot: lightbulb.BotApp):
