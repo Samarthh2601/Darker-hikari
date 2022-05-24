@@ -1,7 +1,7 @@
 import lightbulb
 import hikari
 import datetime
-import ext
+import utils
 
 class Moderation(lightbulb.Plugin):
     def __init__(self):
@@ -28,7 +28,7 @@ async def member_warn(ctx: lightbulb.SlashContext):
     guild_data = await mod.bot.info.create_acc(ctx.guild_id, 0, 0)
 
     if member_data.warns+1 == guild_data.kick_thresh:
-        view = ext.KickView()
+        view = utils.KickView()
         msg = await ctx.respond(f"{member.mention} will get kicked due to reaching the kick threshold of **{_guild.name}**, do you wish to kick them or warn them?", components=view.build())
 
         view.start(await msg.message())
@@ -50,7 +50,7 @@ async def member_warn(ctx: lightbulb.SlashContext):
             await ctx.respond(embed=embed)
     elif member_data.warns+1 == guild_data.ban_thresh:
         
-        view = ext.BanView()
+        view = utils.BanView()
         msg = await ctx.respond(f"{member.mention} will get banned due to reaching the ban threshold of **{_guild.name}**, do you wish to ban them or warn them?", components=view.build())
 
         view.start(await msg.message())
@@ -88,7 +88,7 @@ async def member_warn(ctx: lightbulb.SlashContext):
             await mod.bot.warns.update(ctx.author.id, ctx.guild_id, member_data.warns+1)
 
     elif member_data.warns+1 > guild_data.kick_thresh and member_data.warns+1 < guild_data.ban_thresh:
-        view = ext.KickView()
+        view = utils.KickView()
         msg = await ctx.respond(f"{member.mention} will get kicked due to passing the kick threshold of **{_guild.name}**, do you wish to kick them or warn them again?", components=view.build())
 
         view.start(await msg.message())
@@ -109,7 +109,7 @@ async def member_warn(ctx: lightbulb.SlashContext):
             await ctx.respond(embed=embed)
 
     elif member_data.warns+1 > guild_data.ban_thresh:
-        view = ext.BanView()
+        view = utils.BanView()
         msg = await ctx.respond(f"{member.mention} will get banned due to passing the ban threshold of **{_guild.name}**, do you wish to ban them or warn them?", components=view.build())
  
         view.start(await msg.message())
@@ -244,7 +244,7 @@ async def embed_text(ctx: lightbulb.SlashContext):
     if anonym_author.lower() == "no": embed.set_author(name=ctx.author.username, icon=ctx.author.display_avatar_url)
     # -------------------------------------------------------
     if embed_title: embed.title = embed_title
-    if embed_colour: embed.colour = ext.get_hex(embed_colour)
+    if embed_colour: embed.colour = utils.get_hex(embed_colour)
     if embed_image_url: embed.set_image(embed_image_url)
     if embed_addit_message: return await channel.send(embed_addit_message, embed=embed)
     return await channel.send(embed=embed)
@@ -293,7 +293,7 @@ async def config_channels(ctx: lightbulb.SlashContext):
     guild = ctx.get_guild()
     icon = guild.icon_url
     configed_channels = await mod.bot.channels.create(ctx.guild_id, 0, 0, 0, 0)
-    data_dict = ext.format_channels(configed_channels)
+    data_dict = utils.format_channels(configed_channels)
     embed = hikari.Embed(title=f"Configured Channels for {guild.name}!", colour=ctx.author.accent_colour).add_field("Welcome channel", data_dict["welcome"]).add_field("Leave channel", data_dict["leave"]).add_field("Log channel", data_dict["log"]).add_field("Vent channel", data_dict["vent"])
     if icon:
         embed.set_thumbnail(icon)

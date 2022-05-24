@@ -7,6 +7,7 @@ class Admin(lightbulb.Plugin):
         super().__init__(name="Admin Commands", description="Bot Admin Commands")
 
 admin = Admin()
+admin.add_checks(lightbulb.owner_only)
 
 @admin.command
 @lightbulb.command(name="reload", description="Reload all the extensions", auto_defer=True, ephemeral=True)

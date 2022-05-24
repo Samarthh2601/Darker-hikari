@@ -1,7 +1,6 @@
 from db import *
 import hikari
 import lightbulb
-from lightbulb.app import BotApp
 from datetime import datetime
 from lightbulb.ext import tasks
 from aiohttp import ClientSession
@@ -13,8 +12,8 @@ load_dotenv()
 
 def get_token(): return os.getenv("TOKEN")
 
-class Dark(BotApp):
-    def __init__(self) -> BotApp:
+class Dark(lightbulb.BotApp):
+    def __init__(self) -> lightbulb.BotApp:
         self.http = ClientSession()
         self.eco = Bank()
         self.xp = Experience()
@@ -37,12 +36,5 @@ class Dark(BotApp):
 
 bot = Dark()
 miru.load(bot)
-
-@bot.listen(lightbulb.SlashCommandErrorEvent)
-async def on_error(event: lightbulb.SlashCommandErrorEvent):
-    exception = event.exception.__cause__ or event.exception
-    if isinstance(exception, hikari.NotFoundError):
-        return 
-    raise event.exception
 
 bot.run()

@@ -3,7 +3,7 @@ import hikari
 from dotenv import load_dotenv
 import os
 import jokeapi
-from ext import get_news
+from utils import get_news
 
 load_dotenv("./")
 

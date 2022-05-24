@@ -25,7 +25,7 @@ class Bank:
             return None
         return self.named_tuple(data[0], data[1], data[2])
     
-    async def create_acc(self, user_id: int, wallet_amount: int, bank_amount: int) -> namedtuple[...]:
+    async def create(self, user_id: int, *, wallet_amount: int=500, bank_amount: int=1000) -> namedtuple[...]:
         _check = await self.read(user_id)
         if _check:
             return self.named_tuple(_check[0], _check[1], _check[2])
