@@ -108,7 +108,6 @@ async def bm_mes(ctx: lightbulb.SlashContext):
 @lightbulb.implements(lightbulb.SlashCommand)
 async def reply_msg(ctx: lightbulb.SlashContext):
     _content: str = ctx._options.get("id_or_link")
-    
     _msg_text: str =  ctx._options.get("text")
     if len(_msg_text) > 500:
         return await ctx.respond("The text should be under 500 characters!")
@@ -135,8 +134,6 @@ async def reply_msg(ctx: lightbulb.SlashContext):
         elif message_length <= 5: initial_message_chars = message.content[0:5]
 
     embed = hikari.Embed(title=f"Replying on behalf of {ctx.author}", description=_msg_text, color=ctx.author.accent_colour).set_thumbnail(ctx.author.display_avatar_url).add_field("Message ref", f"{initial_message_chars}...", inline=True).add_field("Server", ctx.get_guild().name, inline=True).add_field("Message author", message.author, inline=True).add_field("Message Channel", msgc_name, inline=True).add_field("Original Message", f"[See Original Message]({message.make_link(ctx.guild_id)})")
-    
-
     try:
         await _member.send(embed=embed)
         await ctx.respond(f"Successfully replied to {_member}!")
@@ -189,8 +186,6 @@ async def get_rank(ctx: lightbulb.SlashContext):
     info = await gen.bot.xp.create(member.id, ctx.guild_id)
     embed = hikari.Embed(title="Level Up!", description=f"XP: {info.xp}\nLevel:{info.level}", colour=member.accent_colour)
     await ctx.respond(embed=embed)
-
-
 
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(gen)

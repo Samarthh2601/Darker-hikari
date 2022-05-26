@@ -1,11 +1,8 @@
+import asyncio
 import lightbulb 
 import hikari
-from dotenv import load_dotenv
-import os
 import jokeapi
-from utils import get_news
-
-load_dotenv("./")
+from utils import get_news, eightball_response, hack_user
 
 class Misc(lightbulb.Plugin):
     def __init__(self):
@@ -14,13 +11,14 @@ class Misc(lightbulb.Plugin):
 
 misc = Misc()
 
+
 @misc.command
 @lightbulb.option(name="query", description="The subject to search for!", type=str, required=True)
 @lightbulb.command(name="news", description="...", auto_defer=True, ephemeral=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def news_command(ctx: lightbulb.SlashContext):
     query = ctx._options.get("query")
-    response = await get_news(api_key=os.getenv("NEWS_KEY"), query=query, req_client=misc.bot.http)
+    response = await get_news(api_key=misc.bot.news_key, query=query, req_client=misc.bot.http)
     news_error = response.get("error")
     if news_error:
         return await ctx.respond(news_error)
@@ -68,7 +66,7 @@ async def get_quote(ctx: lightbulb.SlashContext):
 @lightbulb.implements(lightbulb.SlashCommand)
 async def get_movie_data(ctx: lightbulb.SlashContext):
     movie = ctx._options.get("movie")
-    res = await misc.bot.http.get(f"http://www.omdbapi.com/?t={movie.title()}&plot=full&apikey=" + os.getenv("MOVIE_KEY"))
+    res = await misc.bot.http.get(f"http://www.omdbapi.com/?t={movie.title()}&plot=full&apikey=" + misc.bot.movie_key)
     if res.status != 200:
         return await ctx.respond("Could not find that movie!")
     content = await res.json()
@@ -102,6 +100,62 @@ async def get_meme(ctx: lightbulb.SlashContext):
     content = await resp.json()
     embed = hikari.Embed(title= content["title"], description=f"By: {content['author']}", color=ctx.author.accent_color).set_footer(text=f"Reddit Page: {content['postLink']}").set_image(content["url"])
     await ctx.respond(embed=embed)
+
+@misc.command
+@lightbulb.option(name="query", description="Eightball requires your views.", type=str, required=True)
+@lightbulb.command(name="8ball", description="Let the 8ball decide!", auto_defer=True, ephemeral=True)
+@lightbulb.implements(lightbulb.SlashCommand)
+async def eightball(ctx: lightbulb.SlashContext):
+    await ctx.respond(eightball_response())
+
+@misc.command
+@lightbulb.option(name="member", description="The member to hack!", type=hikari.Member, required=True)
+@lightbulb.command(name="hack", description="Hack a user! WARNING: This is a dangerous and real hack", auto_defer=True, ephemeral=False)
+@lightbulb.implements(lightbulb.SlashCommand)
+async def hack_(ctx: lightbulb.SlashContext):
+    member = ctx._options.get("member")
+    hac_c = hack_user(member)
+    msg = await ctx.respond("The completely reliable and dangerous hack will begin in just a few moments...")
+    await asyncio.sleep(3)
+    for hack in hac_c:
+        await msg.edit(content=hack)
+        await asyncio.sleep(2)
+
+@misc.command
+@lightbulb.option(name="query", description="The topic to search for!", required=True, type=str)
+@lightbulb.command(name="spotify", description="Search spotify for information!", auto_defer=True, ephemeral=True)
+@lightbulb.implements(lightbulb.SlashCommand)
+async def spotify_(ctx: lightbulb.SlashContext):
+    query = ctx._options.get("query")
+    data = misc.bot.spotify_search(query, limit=1)
+    sp_data = data['tracks']['items'][0]
+    album_type = sp_data['album']['album_type']
+    if album_type == 'single':
+        song_url = sp_data['external_urls']['spotify']
+        song_name = sp_data['name']
+        artists = sp_data['artists'][0]['name']
+        album_type = sp_data['album']['type']
+        album_url = sp_data['album']['external_urls']['spotify']
+        artists_url = sp_data['artists'][0]['external_urls']['spotify']
+        embed = hikari.Embed(title=song_name, description="", color=ctx.author.accent_color).set_thumbnail(sp_data['album']['images'][0]['url'])
+
+        embed.description += f"[{song_name}]({song_url})\n[{artists}]({artists_url})\n[Album]({album_url})\nAlbum Type: {album_type}"
+
+        await ctx.respond(embed=embed)
+
+    elif album_type == 'compilation':
+        album_tracks = sp_data['album']['total_tracks']
+        album_name = sp_data['album']['name']
+        track_url = sp_data['external_urls']['spotify']
+        album_release = sp_data['album']['release_date']
+        album_link = sp_data['album']['external_urls']['spotify']
+        album_image = sp_data['album']['images'][0]['url']
+        embed2 = hikari.Embed(title=album_name, description="", color=ctx.author.accent_color).set_thumbnail(album_image)
+
+        embed2.description += f"[Top Track in  the Album]({track_url})\n[Album]({album_link})\nTotal Number of tracks in Album: **{album_tracks}**\nRelease Date: **{album_release}**"
+
+    else:
+        return await ctx.respond("Could not get that...")
 
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(misc)

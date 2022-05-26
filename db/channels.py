@@ -17,7 +17,7 @@ class Channels:
         _data = await self.cur.execute("SELECT * FROM channels")
         return await _data.fetchall()
 
-    async def read(self, guild_id: int) -> namedtuple[...]:
+    async def read(self, guild_id: int) -> namedtuple:
         g_data = await self.cur.execute('''
             SELECT * FROM channels WHERE id = ?
             ''', (guild_id,))
@@ -28,7 +28,7 @@ class Channels:
 
         return self.named_tuple(_guild_data[0], _guild_data[1], _guild_data[2], _guild_data[3], _guild_data[4])
 
-    async def create(self, guild_id: int, welcome: int, leave: int, log: int, vent: int) -> namedtuple[...]:
+    async def create(self, guild_id: int, welcome: int, leave: int, log: int, vent: int) -> namedtuple:
         _check = await self.read(guild_id)
         if _check:
             return self.named_tuple(_check[0], _check[1], _check[2], _check[3], _check[4])

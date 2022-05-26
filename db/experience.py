@@ -9,28 +9,25 @@ class Experience:
     async def setup(self) -> None:
         self.conn = await aiosqlite.connect("./dbs/experiences.db")
         self.cur = await self.conn.cursor()
-        await self.cur.execute(''' CREATE TABLE IF NOT EXISTS exps(user_id INTEGER PRIMARY KEY NOT NULL, guild_id INTEGER, xp INTEGER, level INTEGER)''')
+        await self.cur.execute('''CREATE TABLE IF NOT EXISTS exps(user_id INTEGER, guild_id INTEGER, xp INTEGER, level INTEGER)''')
         await self.conn.commit()
         self.named_tuple = namedtuple("user", ["id", "guild_id", "xp", "level",])
 
     async def all_records(self):
-        _data = await self.cur.execute("SELECT * FROM exps")
-        return await _data.fetchall()
+        return await (await self.cur.execute("SELECT * FROM exps")).fetchall()
+        
     
     async def all_guild_records(self, guild_id: int):
-        return await (await self.cur.execute("SELECT * FROM exps WHERE guild_id = ?", (guild_id))).fetchall()
+        return await (await self.cur.execute("SELECT * FROM exps WHERE guild_id = ?", (guild_id,))).fetchall()
 
-    async def read(self, user_id: int, guild_id: int) -> namedtuple[...]:
-        u_data = await self.cur.execute('''
-            SELECT * FROM exps WHERE user_id = ? AND guild_id = ?
-            ''', (user_id, guild_id,))
-        _user_data = await u_data.fetchone()
+    async def read(self, user_id: int, guild_id: int) -> namedtuple:
+        _user_data = await (await self.cur.execute('''SELECT * FROM exps WHERE user_id = ? AND guild_id = ?''', (user_id, guild_id,))).fetchone()
 
         if not _user_data: return None
 
         return self.named_tuple(_user_data[0], _user_data[1], _user_data[2], _user_data[3])
 
-    async def create(self, user_id: int, guild_id: int, starting_xp: int=5, starting_level: int=1) -> namedtuple[...]:
+    async def create(self, user_id: int, guild_id: int, starting_xp: int=5, starting_level: int=1):
         _check = await self.read(user_id, guild_id)
         if _check:
             return self.named_tuple(_check[0], _check[1], _check[2], _check[3])
